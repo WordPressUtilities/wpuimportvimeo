@@ -6,14 +6,15 @@ A WordPress plugin to import the latest videos for a vimeo account.
 TODO
 ---
 
-* [ ] Add a crontab.
+* [x] Use WPU Post types & Taxos if available.
+* [x] Add a crontab.
+* [x] Add an "import now" button.
+* [x] Import thumbnail.
+* [x] Add a way to test the Vimeo credentials.
 * [ ] Add some hooks.
 * [ ] Add a method to import initial videos.
 * [ ] Translate.
-* [ ] Import thumbnail.
-* [ ] Add an "import now" button.
 * [ ] Import download url in all available formats if pro.
-* [ ] Add a way to test the Vimeo credentials.
 * [ ] Setting to import as Draft.
 * [ ] Add a button on post to update video infos.
-* [ ] Use WPU Post types & Taxos if available.
+* [ ] Add an uninstall.
