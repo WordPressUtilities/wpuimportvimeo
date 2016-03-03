@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Import Vimeo
 Plugin URI: https://github.com/WordPressUtilities/wpuimportvimeo
-Version: 0.2
+Version: 0.3
 Description: Import latest vimeo videos.
 Author: Darklg
 Author URI: http://darklg.me/
@@ -43,8 +43,10 @@ class WPUImportVimeo {
         $this->options['admin_url'] = admin_url('edit.php?post_type=' . $this->post_type . '&page=' . $this->options['plugin_id']);
         $this->post_type_info = array(
             'public' => true,
-            'label' => 'Videos Vimeo',
-            'name' => 'Videos Vimeo',
+            'name' => 'Video Vimeo',
+            'label' => 'Video Vimeo',
+            'plural' => 'Videos Vimeo',
+            'female' => 1,
             'menu_icon' => 'dashicons-video-alt3'
         );
     }
@@ -98,6 +100,8 @@ class WPUImportVimeo {
         if (!is_admin()) {
             return;
         }
+
+        load_plugin_textdomain('wpuimportvimeo', false, dirname(plugin_basename(__FILE__)) . '/lang/');
 
         // Admin page
         add_action('admin_menu', array(&$this,
@@ -163,6 +167,11 @@ class WPUImportVimeo {
             return false;
         }
 
+        // Add required classes
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+
         // Create post
         $video_time = strtotime($video->modified_time);
 
@@ -177,6 +186,25 @@ class WPUImportVimeo {
 
         // Insert the post into the database
         $post_id = wp_insert_post($video_post);
+
+        // Download links are available
+        if (property_exists($video, 'download') && is_array($video->download) && !empty($video->download)) {
+            // Sort video sources
+            uasort($video->download, array(&$this, 'video_array_sort_by_width'));
+            $sources = array();
+            foreach ($video->download as $source) {
+                if ($source->type != 'source') {
+                    $sources[] = array(
+                        'quality' => $source->quality,
+                        'width' => $source->width,
+                        'height' => $source->height,
+                        'link' => $source->link
+                    );
+                }
+            }
+            add_post_meta($post_id, 'wpuimportvimeo_downloads', json_encode($sources));
+
+        }
 
         // Set metas
         add_post_meta($post_id, 'wpuimportvimeo_id', $video_id);
@@ -206,6 +234,13 @@ class WPUImportVimeo {
         return $post_id;
     }
 
+    public function video_array_sort_by_width($a, $b) {
+        if ($a->width == $b->width) {
+            return 0;
+        }
+        return ($a->width < $b->width) ? -1 : 1;
+    }
+
     /* ----------------------------------------------------------
       Admin config
     ---------------------------------------------------------- */
@@ -213,7 +248,7 @@ class WPUImportVimeo {
     /* Admin page */
 
     public function admin_menu() {
-        add_submenu_page('edit.php?post_type=' . $this->post_type, $this->options['plugin_name'] . ' - ' . __('Settings'), __('Import settings', 'wpuimportvimeo'), $this->options['plugin_userlevel'], $this->options['plugin_pageslug'], array(&$this,
+        add_submenu_page('edit.php?post_type=' . $this->post_type, $this->options['plugin_name'] . ' - ' . __('Settings'), __('Import Settings', 'wpuimportvimeo'), $this->options['plugin_userlevel'], $this->options['plugin_pageslug'], array(&$this,
             'admin_settings'
         ), '', 110);
     }
@@ -302,6 +337,25 @@ class WPUImportVimeo {
         $fields['wpuimportvimeo_duration'] = array(
             'box' => 'vimeo_settings',
             'name' => 'Duration'
+        );
+        $fields['wpuimportvimeo_downloads'] = array(
+            'box' => 'vimeo_settings',
+            'name' => 'Download links',
+            'type' => 'table',
+            'columns' => array(
+                'quality' => array(
+                    'name' => 'Quality'
+                ),
+                'width' => array(
+                    'name' => 'Width'
+                ),
+                'height' => array(
+                    'name' => 'Height'
+                ),
+                'link' => array(
+                    'name' => 'link'
+                )
+            )
         );
         return $fields;
     }

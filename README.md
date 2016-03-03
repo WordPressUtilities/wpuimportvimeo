@@ -11,10 +11,10 @@ TODO
 * [x] Add an "import now" button.
 * [x] Import thumbnail.
 * [x] Add a way to test the Vimeo credentials.
+* [x] Import download url in all available formats if pro.
+* [x] Translate.
+* [ ] Add a button on post to update video infos.
 * [ ] Add some hooks.
 * [ ] Add a method to import initial videos.
-* [ ] Translate.
-* [ ] Import download url in all available formats if pro.
 * [ ] Setting to import as Draft.
-* [ ] Add a button on post to update video infos.
 * [ ] Add an uninstall.
