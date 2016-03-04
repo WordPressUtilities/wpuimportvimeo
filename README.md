@@ -13,7 +13,7 @@ TODO
 * [x] Add a way to test the Vimeo credentials.
 * [x] Import download url in all available formats if pro.
 * [x] Translate.
-* [ ] Add a button on post to update video infos.
+* [x] Add a button on post to update video infos.
 * [ ] Add some hooks.
 * [ ] Add a method to import initial videos.
 * [ ] Setting to import as Draft.

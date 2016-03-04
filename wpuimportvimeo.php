@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Import Vimeo
 Plugin URI: https://github.com/WordPressUtilities/wpuimportvimeo
-Version: 0.3
+Version: 0.4
 Description: Import latest vimeo videos.
 Author: Darklg
 Author URI: http://darklg.me/
@@ -86,8 +86,19 @@ class WPUImportVimeo {
             )
         );
         if (is_admin()) {
+
+            // Settings
             include 'inc/WPUBaseSettings.php';
             new \wpuimportvimeo\WPUBaseSettings($this->settings_details, $this->settings);
+
+            // Meta box
+            add_action('add_meta_boxes', array(&$this,
+                'init_metabox'
+            ));
+            add_action('save_post', array(&$this,
+                'save_metabox'
+            ));
+
         }
     }
 
@@ -143,6 +154,20 @@ class WPUImportVimeo {
         return $_body->data;
     }
 
+    public function get_video_by_id($video_id) {
+        // Get videos
+        $_url = 'https://api.vimeo.com/videos/' . $video_id . '?access_token=' . $this->token;
+        $_request = wp_remote_get($_url);
+        if (!is_array($_request) || !isset($_request['body'])) {
+            return false;
+        }
+        $_body = json_decode($_request['body']);
+        if (!is_object($_body) || !isset($_body->uri)) {
+            return false;
+        }
+        return $_body;
+    }
+
     public function import() {
         $_videos = $this->get_latest_videos_for_me();
         if (!is_array($_videos)) {
@@ -160,17 +185,10 @@ class WPUImportVimeo {
     }
 
     public function create_post_from_video($video, $latest_videos_ids) {
-        global $wpdb;
-
-        $video_id = preg_replace('/([^0-9]+)/isU', '', $video->uri);
+        $video_id = $this->get_video_id_from_string($video->uri);
         if (in_array($video_id, $latest_videos_ids)) {
             return false;
         }
-
-        // Add required classes
-        require_once ABSPATH . 'wp-admin/includes/media.php';
-        require_once ABSPATH . 'wp-admin/includes/file.php';
-        require_once ABSPATH . 'wp-admin/includes/image.php';
 
         // Create post
         $video_time = strtotime($video->modified_time);
@@ -187,6 +205,25 @@ class WPUImportVimeo {
         // Insert the post into the database
         $post_id = wp_insert_post($video_post);
 
+        $this->update_metas_from_video($post_id, $video);
+
+        return $post_id;
+    }
+
+    public function get_video_id_from_string($source) {
+        return preg_replace('/([^0-9]+)/isU', '', $source);
+    }
+
+    public function update_metas_from_video($post_id, $video) {
+        global $wpdb;
+
+        // Add required classes
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+
+        $video_id = $this->get_video_id_from_string($video->uri);
+
         // Download links are available
         if (property_exists($video, 'download') && is_array($video->download) && !empty($video->download)) {
             // Sort video sources
@@ -202,16 +239,16 @@ class WPUImportVimeo {
                     );
                 }
             }
-            add_post_meta($post_id, 'wpuimportvimeo_downloads', json_encode($sources));
+            update_post_meta($post_id, 'wpuimportvimeo_downloads', json_encode($sources));
 
         }
 
         // Set metas
-        add_post_meta($post_id, 'wpuimportvimeo_id', $video_id);
-        add_post_meta($post_id, 'wpuimportvimeo_link', $video->link);
-        add_post_meta($post_id, 'wpuimportvimeo_width', $video->width);
-        add_post_meta($post_id, 'wpuimportvimeo_height', $video->height);
-        add_post_meta($post_id, 'wpuimportvimeo_duration', $video->duration);
+        update_post_meta($post_id, 'wpuimportvimeo_id', $video_id);
+        update_post_meta($post_id, 'wpuimportvimeo_link', $video->link);
+        update_post_meta($post_id, 'wpuimportvimeo_width', $video->width);
+        update_post_meta($post_id, 'wpuimportvimeo_height', $video->height);
+        update_post_meta($post_id, 'wpuimportvimeo_duration', $video->duration);
 
         // Import thumbnail
         if (is_array($video->pictures->sizes) && !empty($video->pictures->sizes)) {
@@ -228,10 +265,8 @@ class WPUImportVimeo {
             ));
 
             set_post_thumbnail($post_id, $att_id);
-
         }
 
-        return $post_id;
     }
 
     public function video_array_sort_by_width($a, $b) {
@@ -244,6 +279,28 @@ class WPUImportVimeo {
     /* ----------------------------------------------------------
       Admin config
     ---------------------------------------------------------- */
+
+    /* Meta box */
+
+    public function init_metabox() {
+        add_meta_box('reload_infos_metabox', __('Reload infos', 'wpuimportvimeo'), array(&$this, 'callback_display_metabox'), $this->post_type, 'side');
+    }
+
+    public function callback_display_metabox($post) {
+        echo '<p>';
+        submit_button(__('Reload', 'wpuimportvimeo'), 'primary', 'reload_vimeo', false);
+        echo '</p>';
+    }
+
+    public function save_metabox($post_id) {
+        if (isset($_POST['reload_vimeo'])) {
+            $video_id = $this->get_video_id_from_string(get_post_meta(get_the_ID(), 'wpuimportvimeo_id', 1));
+            $video = $this->get_video_by_id($video_id);
+            if ($video !== false) {
+                $this->update_metas_from_video($post_id, $video);
+            }
+        }
+    }
 
     /* Admin page */
 

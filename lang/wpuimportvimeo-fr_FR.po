@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Import Vimeo\n"
-"POT-Creation-Date: 2016-03-03 23:04+0100\n"
+"POT-Creation-Date: 2016-03-04 20:36+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -16,7 +16,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: ../.\n"
 
 #: .././inc/WPUBaseSettings.php:32 .././wpuimportvimeo.php:78
-#: .././wpuimportvimeo.php:246
+#: .././wpuimportvimeo.php:306
 msgid "Import Settings"
 msgstr "Réglages d'import"
 
@@ -24,44 +24,54 @@ msgstr "Réglages d'import"
 msgid "API Token"
 msgstr "Token API"
 
-#: .././wpuimportvimeo.php:246
+#: .././wpuimportvimeo.php:286
+msgid "Reload infos"
+msgstr "Recharger les infos"
+
+#: .././wpuimportvimeo.php:290
+msgid "Reload"
+msgstr "Recharger"
+
+#: .././wpuimportvimeo.php:306
 msgid "Settings"
 msgstr "Réglages"
 
-#: .././wpuimportvimeo.php:256
+#: .././wpuimportvimeo.php:316
 msgid "Tools"
 msgstr "Outils"
 
-#: .././wpuimportvimeo.php:265
+#: .././wpuimportvimeo.php:325
 #, php-format
 msgid "Next automated import in %s’%s’’"
 msgstr "Prochain import automatique dans %s min et %s s"
 
-#: .././wpuimportvimeo.php:267
+#: .././wpuimportvimeo.php:327
 msgid "Import now"
 msgstr "Importer maintenant"
 
-#: .././wpuimportvimeo.php:269
+#: .././wpuimportvimeo.php:329
 msgid "Test API"
 msgstr "Tester l'API"
 
-#: .././wpuimportvimeo.php:278
+#: .././wpuimportvimeo.php:338
 msgid "Save Changes"
 msgstr "Sauvegarder les modifications"
 
-#: .././wpuimportvimeo.php:288
+#: .././wpuimportvimeo.php:348
 #, php-format
 msgid "Imported videos : %s"
 msgstr "Vidéos importées : %s"
 
-#: .././wpuimportvimeo.php:290
+#: .././wpuimportvimeo.php:350
 msgid "No new imports"
 msgstr "Aucun nouvel import"
 
-#: .././wpuimportvimeo.php:296
+#: .././wpuimportvimeo.php:356
 msgid "The API works great !"
 msgstr "L'API fonctionne très bien !"
 
-#: .././wpuimportvimeo.php:298
+#: .././wpuimportvimeo.php:358
 msgid "The credentials seems invalid or the user do not have videos."
-msgstr "Les informations d'identification semblent invalident ou l'utilisateur n'a pas de vidéos."
+msgstr ""
+"Les informations d'identification semblent invalident ou l'utilisateur n'a "
+"pas de vidéos."
