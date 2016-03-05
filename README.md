@@ -14,7 +14,8 @@ TODO
 * [x] Import download url in all available formats if pro.
 * [x] Translate.
 * [x] Add a button on post to update video infos.
+* [x] Checkbox to regenerate content & title when importing.
+* [x] Add an uninstall.
+* [x] Setting to import as Draft.
 * [ ] Add some hooks.
 * [ ] Add a method to import initial videos.
-* [ ] Setting to import as Draft.
-* [ ] Add an uninstall.

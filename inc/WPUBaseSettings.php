@@ -1,15 +1,15 @@
 <?php
 namespace wpuimportvimeo;
+
 /*
 Class Name: WPU Base Settings
 Description: A class to handle native settings in WordPress admin
-Version: 0.1
+Version: 0.1.1
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
 License URI: http://opensource.org/licenses/MIT
 */
-
 
 class WPUBaseSettings {
     public function __construct($settings_details = array(), $settings = array()) {
@@ -37,14 +37,13 @@ class WPUBaseSettings {
         $this->settings_details = $settings_details;
         if (!is_array($settings)) {
             $settings = array(
-               'option_example' => array(
-                   'label' => 'My label',
-                   'help' => 'My help',
-                   'type' => 'textarea'
-               )
+                'option_example' => array(
+                    'label' => 'My label',
+                    'help' => 'My help',
+                    'type' => 'textarea'
+                )
             );
         }
-
 
         $this->settings = $settings;
     }
@@ -96,7 +95,8 @@ class WPUBaseSettings {
 
         switch ($args['type']) {
         case 'checkbox':
-            echo '<label><input type="checkbox" ' . $name . ' ' . $id . ' ' . checked($options[$args['id']], '1', 0) . ' value="1" /> ' . $args['label_check'] . '</label>';
+            $checked_val = isset($options[$args['id']]) ? $options[$args['id']] : '0';
+            echo '<label><input type="checkbox" ' . $name . ' ' . $id . ' ' . checked($checked_val, '1', 0) . ' value="1" /> ' . $args['label_check'] . '</label>';
             break;
         case 'textarea':
             echo '<textarea ' . $name . ' ' . $id . ' cols="20" rows="5">' . esc_attr($options[$args['id']]) . '</textarea>';

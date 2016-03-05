@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Import Vimeo
 Plugin URI: https://github.com/WordPressUtilities/wpuimportvimeo
-Version: 0.4
+Version: 0.5
 Description: Import latest vimeo videos.
 Author: Darklg
 Author URI: http://darklg.me/
@@ -40,6 +40,7 @@ class WPUImportVimeo {
         if (isset($settings['token'])) {
             $this->token = $settings['token'];
         }
+        $this->import_draft = (isset($settings['import_draft']) && $settings['import_draft'] == '1');
         $this->options['admin_url'] = admin_url('edit.php?post_type=' . $this->post_type . '&page=' . $this->options['plugin_id']);
         $this->post_type_info = array(
             'public' => true,
@@ -83,6 +84,12 @@ class WPUImportVimeo {
             'token' => array(
                 'section' => 'import',
                 'label' => __('API Token', 'wpuimportvimeo')
+            ),
+            'import_draft' => array(
+                'section' => 'import',
+                'type' => 'checkbox',
+                'label_check' => __('Posts are created with a draft status.', 'wpuimportvimeo'),
+                'label' => __('Import as draft', 'wpuimportvimeo')
             )
         );
         if (is_admin()) {
@@ -197,7 +204,7 @@ class WPUImportVimeo {
             'post_title' => $video->name,
             'post_content' => '' . $video->description,
             'post_date' => date('Y-m-d H:i:s', $video_time),
-            'post_status' => 'draft',
+            'post_status' => $this->import_draft ? 'draft' : 'published',
             'post_author' => 1,
             'post_type' => $this->post_type
         );
@@ -212,6 +219,17 @@ class WPUImportVimeo {
 
     public function get_video_id_from_string($source) {
         return preg_replace('/([^0-9]+)/isU', '', $source);
+    }
+
+    public function update_content_from_video($post_id, $video) {
+        if (wp_is_post_revision($post_id)) {
+            return;
+        }
+        wp_update_post(array(
+            'ID' => $post_id,
+            'post_title' => $video->name,
+            'post_content' => $video->description
+        ));
     }
 
     public function update_metas_from_video($post_id, $video) {
@@ -287,19 +305,29 @@ class WPUImportVimeo {
     }
 
     public function callback_display_metabox($post) {
+        echo '<p><label><input type="checkbox" name="update_content" value="1" />' . __('Replace title & content', 'wpuimportvimeo') . '</label></p>';
         echo '<p>';
         submit_button(__('Reload', 'wpuimportvimeo'), 'primary', 'reload_vimeo', false);
         echo '</p>';
     }
 
     public function save_metabox($post_id) {
+        remove_action('save_post', array(&$this,
+            'save_metabox'
+        ));
         if (isset($_POST['reload_vimeo'])) {
             $video_id = $this->get_video_id_from_string(get_post_meta(get_the_ID(), 'wpuimportvimeo_id', 1));
             $video = $this->get_video_by_id($video_id);
             if ($video !== false) {
                 $this->update_metas_from_video($post_id, $video);
+                if (isset($_POST['update_content'])) {
+                    $this->update_content_from_video($post_id, $video);
+                }
             }
         }
+        add_action('save_post', array(&$this,
+            'save_metabox'
+        ));
     }
 
     /* Admin page */
@@ -368,17 +396,13 @@ class WPUImportVimeo {
 
     public function post_metas_boxes($boxes) {
         $boxes['vimeo_settings'] = array(
-            'name' => 'Box name',
+            'name' => 'Vimeo metas',
             'post_type' => array($this->post_type)
         );
         return $boxes;
     }
 
     public function post_metas_fields($fields) {
-        $fields['wpuimportvimeo_id'] = array(
-            'box' => 'vimeo_settings',
-            'name' => 'Video Id'
-        );
         $fields['wpuimportvimeo_link'] = array(
             'box' => 'vimeo_settings',
             'name' => 'Link'
@@ -428,6 +452,17 @@ class WPUImportVimeo {
 
     public function deactivation() {
         wp_clear_scheduled_hook('wpuimportvimeo__cron_hook');
+        flush_rewrite_rules();
+    }
+
+    public function uninstall() {
+        delete_option($this->option_id);
+        delete_post_meta_by_key('wpuimportvimeo_downloads');
+        delete_post_meta_by_key('wpuimportvimeo_id');
+        delete_post_meta_by_key('wpuimportvimeo_link');
+        delete_post_meta_by_key('wpuimportvimeo_width');
+        delete_post_meta_by_key('wpuimportvimeo_height');
+        delete_post_meta_by_key('wpuimportvimeo_duration');
         flush_rewrite_rules();
     }
 
