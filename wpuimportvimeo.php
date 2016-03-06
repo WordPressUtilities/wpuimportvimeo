@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Import Vimeo
 Plugin URI: https://github.com/WordPressUtilities/wpuimportvimeo
-Version: 0.5
+Version: 0.6
 Description: Import latest vimeo videos.
 Author: Darklg
 Author URI: http://darklg.me/
@@ -66,9 +66,6 @@ class WPUImportVimeo {
             include 'inc/WPUBaseMessages.php';
             $this->messages = new \wpuimportvimeo\WPUBaseMessages($this->options['plugin_id']);
         }
-        add_action('wpuimportvimeo_admin_notices', array(&$this->messages,
-            'admin_notices'
-        ));
 
         /* Settings */
         $this->settings_details = array(
@@ -125,6 +122,9 @@ class WPUImportVimeo {
         add_action('admin_menu', array(&$this,
             'admin_menu'
         ));
+        add_action('admin_menu', array(&$this,
+            'import_archives_iframe'
+        ));
         add_action('admin_post_wpuimportvimeo_postaction', array(&$this,
             'postAction'
         ));
@@ -144,12 +144,16 @@ class WPUImportVimeo {
 
     public function get_last_imported_videos_ids() {
         global $wpdb;
-        return $wpdb->get_col("SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = 'wpuimportvimeo_id' ORDER BY meta_id DESC LIMIT 0,200");
+        return $wpdb->get_col("SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = 'wpuimportvimeo_id' ORDER BY meta_id DESC LIMIT 0,2000");
     }
 
-    public function get_latest_videos_for_me($nb = 10) {
+    public function get_latest_videos_for_me($nb = 10, $only_data = true) {
+        return $this->get_videos_for_me($nb, 1, 'desc', $only_data);
+    }
+
+    public function get_videos_for_me($nb = 10, $paged = 1, $order = 'desc', $only_data = true) {
         // Get videos
-        $_url = 'https://api.vimeo.com/me/videos?per_page=' . $nb . '&access_token=' . $this->token;
+        $_url = 'https://api.vimeo.com/me/videos?page=' . $paged . '&direction=' . $order . '&per_page=' . $nb . '&access_token=' . $this->token;
         $_request = wp_remote_get($_url);
         if (!is_array($_request) || !isset($_request['body'])) {
             return false;
@@ -157,6 +161,9 @@ class WPUImportVimeo {
         $_body = json_decode($_request['body']);
         if (!is_object($_body) || !isset($_body->data)) {
             return false;
+        }
+        if (!$only_data) {
+            return $_body;
         }
         return $_body->data;
     }
@@ -176,7 +183,10 @@ class WPUImportVimeo {
     }
 
     public function import() {
-        $_videos = $this->get_latest_videos_for_me();
+        return $this->import_videos_to_posts($this->get_latest_videos_for_me());
+    }
+
+    public function import_videos_to_posts($_videos) {
         if (!is_array($_videos)) {
             return 0;
         }
@@ -341,13 +351,13 @@ class WPUImportVimeo {
     public function admin_settings() {
 
         echo '<div class="wrap"><h1>' . get_admin_page_title() . '</h1>';
-        do_action('wpuimportvimeo_admin_notices');
         if (!empty($this->token)) {
             echo '<h2>' . __('Tools') . '</h2>';
             echo '<form action="' . admin_url('admin-post.php') . '" method="post">';
             echo '<input type="hidden" name="action" value="wpuimportvimeo_postaction">';
             $schedule = wp_next_scheduled('wpuimportvimeo__cron_hook');
             $seconds = $schedule - time();
+            $minutes = 0;
             if ($seconds >= 60) {
                 $minutes = (int) ($seconds / 60);
                 $seconds = $seconds % 60;
@@ -360,6 +370,9 @@ class WPUImportVimeo {
             echo '</p>';
             echo '</form>';
             echo '<hr />';
+            echo '<h2>' . __('Old videos', 'wpuimportvimeo') . '</h2>';
+            echo '<iframe style="height:130px;width:100%;" src="' . wp_nonce_url(get_admin_url(null, '/?wpuimportvimeo_iframe=1'), 'wpuimportvimeo_archives') . '" frameborder="0"></iframe>';
+            echo '<hr />';
         }
 
         echo '<form action="' . admin_url('options.php') . '" method="post">';
@@ -369,6 +382,54 @@ class WPUImportVimeo {
         echo '</form>';
         echo '</div>';
         echo '</div>';
+    }
+
+    public function import_archives_iframe() {
+        // Check correct page
+        if (!isset($_GET['wpuimportvimeo_iframe'])) {
+            return;
+        }
+        // Nonce to avoid surprisesÒ
+        check_admin_referer('wpuimportvimeo_archives');
+
+        $_importPerPage = 10;
+        $_paged = 0;
+
+        // Default form : start import
+        if (isset($_GET['paged']) && is_numeric($_GET['paged'])) {
+            $_paged = $_GET['paged'];
+
+            // Import videos
+            $_response = $this->get_videos_for_me($_importPerPage, $_GET['paged'], 'asc', false);
+            if (!is_object($_response) || !is_array($_response->data)) {
+                echo '<p>' . __('Everything seems to be imported', 'wpuimportvimeo') . '</p>';
+                die;
+            }
+
+            $_currentPageStart = ($_paged - 1) * $_importPerPage + count($_response->data);
+            $this->import_videos_to_posts($_response->data);
+
+            echo '<p>' . sprintf(__('Importing %s/%s', 'wpuimportvimeo'), $_currentPageStart, $_response->total) . '</p>';
+
+        }
+
+        // Display continue
+        echo '<form id="wpuimportvimeo_archives_form" method="get" action="' . get_admin_url() . '">';
+        echo '<input type="hidden" name="wpuimportvimeo_iframe" value="1">';
+        echo '<input type="hidden" name="paged" value="' . ($_paged + 1) . '">';
+        wp_nonce_field('wpuimportvimeo_archives');
+        if ($_paged > 0) {
+            echo '<p id="autoreload-message">' . sprintf(__('Autoreload in %s seconds', 'wpuimportvimeo'),2) . '</p>';
+            echo '<script>setTimeout(function(){';
+            echo 'document.getElementById(\'wpuimportvimeo_archives_form\').submit();';
+            echo '},2000);</script>';
+        }
+        if ($_paged > 0) echo '<div style="opacity: 0.5;">';
+        submit_button(__('Import old videos', 'wpuimportvimeo'), 'primary', 'import_now');
+        if ($_paged > 0) echo '</div>';
+        echo '</form>';
+
+        die;
     }
 
     public function postAction() {
