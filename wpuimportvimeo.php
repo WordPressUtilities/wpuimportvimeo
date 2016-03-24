@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Import Vimeo
 Plugin URI: https://github.com/WordPressUtilities/wpuimportvimeo
-Version: 0.7
+Version: 0.7.1
 Description: Import latest vimeo videos.
 Author: Darklg
 Author URI: http://darklg.me/
@@ -258,7 +258,7 @@ class WPUImportVimeo {
             uasort($video->files, array(&$this, 'video_array_sort_by_width'));
             $sources = array();
             foreach ($video->files as $source) {
-                if ($source->type != 'source') {
+                if ($source->type != 'source' && $source->quality != 'hls') {
                     $sources[] = array(
                         'quality' => $source->quality,
                         'width' => $source->width,
@@ -423,6 +423,7 @@ class WPUImportVimeo {
             $html .= '<p id="autoreload-message">' . sprintf(__('Autoreload in %s seconds', 'wpuimportvimeo'), 2) . '. <a onclick="clearTimeout(window.timeoutReload);this.parentNode.parentNode.removeChild(this.parentNode);return false;" href="#">' . __('Stop', 'wpuimportvimeo') . '</a></p>';
             $html .= '<script>window.timeoutReload = setTimeout(function(){';
             $html .= 'document.getElementById(\'wpuimportvimeo_archives_form\').submit();';
+            $html .= 'document.getElementById(\'wpuimportvimeo_archives_form\').innerHTML = "' . __('Loading ...', 'wpuimportvimeo') . '";';
             $html .= '},2000);</script>';
         }
         if ($_paged > 0) {
@@ -445,7 +446,7 @@ class WPUImportVimeo {
 
     public function display_iframe_html($html) {
         echo '<!DOCTYPE HTML><html lang="fr-FR"><head><meta charset="UTF-8" />';
-        echo '<link rel="stylesheet" type="text/css" href="'.includes_url().'/css/buttons.css?ver='.date('dmYH').'" />';
+        echo '<link rel="stylesheet" type="text/css" href="' . includes_url() . '/css/buttons.css?ver=' . date('dmYH') . '" />';
         echo '</head><body class="wp-core-ui" style="padding:0;margin:0;">';
         echo $html;
         echo '</body></html>';

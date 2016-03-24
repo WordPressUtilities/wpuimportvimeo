@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Import Vimeo\n"
-"POT-Creation-Date: 2016-03-06 23:56+0100\n"
+"POT-Creation-Date: 2016-03-24 23:03+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -73,38 +73,46 @@ msgstr "Anciennes vidéos"
 msgid "Save Changes"
 msgstr "Sauvegarder les modifications"
 
-#: .././wpuimportvimeo.php:405
+#: .././wpuimportvimeo.php:406
 msgid "Everything seems to be imported"
 msgstr "Tout semble être importé"
 
-#: .././wpuimportvimeo.php:412
+#: .././wpuimportvimeo.php:414
 #, php-format
 msgid "Importing %s/%s"
 msgstr "Importation %s/%s"
 
-#: .././wpuimportvimeo.php:422
+#: .././wpuimportvimeo.php:423
 #, php-format
 msgid "Autoreload in %s seconds"
 msgstr "Rechargement automatique dans %s secondes"
 
-#: .././wpuimportvimeo.php:428
+#: .././wpuimportvimeo.php:423
+msgid "Stop"
+msgstr "Stop"
+
+#: .././wpuimportvimeo.php:426
+msgid "Loading ..."
+msgstr "Chargement en cours…"
+
+#: .././wpuimportvimeo.php:434
 msgid "Import old videos"
 msgstr "Importer des vidéos anciennes"
 
-#: .././wpuimportvimeo.php:439
+#: .././wpuimportvimeo.php:459
 #, php-format
 msgid "Imported videos : %s"
 msgstr "Vidéos importées : %s"
 
-#: .././wpuimportvimeo.php:441
+#: .././wpuimportvimeo.php:461
 msgid "No new imports"
 msgstr "Aucun nouvel import"
 
-#: .././wpuimportvimeo.php:447
+#: .././wpuimportvimeo.php:467
 msgid "The API works great !"
 msgstr "L'API fonctionne très bien !"
 
-#: .././wpuimportvimeo.php:449
+#: .././wpuimportvimeo.php:469
 msgid "The credentials seems invalid or the user do not have videos."
 msgstr ""
 "Les informations d'identification semblent invalides ou l'utilisateur n'a "
