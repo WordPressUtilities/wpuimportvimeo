@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Import Vimeo
 Plugin URI: https://github.com/WordPressUtilities/wpuimportvimeo
-Version: 0.6.1
+Version: 0.7
 Description: Import latest vimeo videos.
 Author: Darklg
 Author URI: http://darklg.me/
@@ -252,23 +252,23 @@ class WPUImportVimeo {
 
         $video_id = $this->get_video_id_from_string($video->uri);
 
-        // Download links are available
-        if (property_exists($video, 'download') && is_array($video->download) && !empty($video->download)) {
+        // Files links are available
+        if (property_exists($video, 'files') && is_array($video->files) && !empty($video->files)) {
             // Sort video sources
-            uasort($video->download, array(&$this, 'video_array_sort_by_width'));
+            uasort($video->files, array(&$this, 'video_array_sort_by_width'));
             $sources = array();
-            foreach ($video->download as $source) {
+            foreach ($video->files as $source) {
                 if ($source->type != 'source') {
                     $sources[] = array(
                         'quality' => $source->quality,
                         'width' => $source->width,
                         'height' => $source->height,
+                        'link_secure' => $source->link_secure,
                         'link' => $source->link
                     );
                 }
             }
-            update_post_meta($post_id, 'wpuimportvimeo_downloads', json_encode($sources));
-
+            update_post_meta($post_id, 'wpuimportvimeo_files', json_encode($sources));
         }
 
         // Set metas
@@ -394,6 +394,7 @@ class WPUImportVimeo {
 
         $_importPerPage = 10;
         $_paged = 0;
+        $html = '';
 
         // Default form : start import
         if (isset($_GET['paged']) && is_numeric($_GET['paged'])) {
@@ -402,34 +403,52 @@ class WPUImportVimeo {
             // Import videos
             $_response = $this->get_videos_for_me($_importPerPage, $_GET['paged'], 'asc', false);
             if (!is_object($_response) || !is_array($_response->data)) {
-                echo '<p>' . __('Everything seems to be imported', 'wpuimportvimeo') . '</p>';
+                $html = '<p>' . __('Everything seems to be imported', 'wpuimportvimeo') . '</p>';
+                $this->display_iframe_html($html);
                 die;
             }
 
             $_currentPageStart = ($_paged - 1) * $_importPerPage + count($_response->data);
             $this->import_videos_to_posts($_response->data);
 
-            echo '<p>' . sprintf(__('Importing %s/%s', 'wpuimportvimeo'), $_currentPageStart, $_response->total) . '</p>';
+            $html .= '<p>' . sprintf(__('Importing %s/%s', 'wpuimportvimeo'), $_currentPageStart, $_response->total) . '</p>';
 
         }
 
         // Display continue
-        echo '<form id="wpuimportvimeo_archives_form" method="get" action="' . get_admin_url() . '">';
-        echo '<input type="hidden" name="wpuimportvimeo_iframe" value="1">';
-        echo '<input type="hidden" name="paged" value="' . ($_paged + 1) . '">';
-        wp_nonce_field('wpuimportvimeo_archives');
+        $html .= '<form id="wpuimportvimeo_archives_form" method="get" action="' . get_admin_url() . '">';
+        $html .= '<input type="hidden" name="wpuimportvimeo_iframe" value="1">';
+        $html .= '<input type="hidden" name="paged" value="' . ($_paged + 1) . '">';
         if ($_paged > 0) {
-            echo '<p id="autoreload-message">' . sprintf(__('Autoreload in %s seconds', 'wpuimportvimeo'),2) . '</p>';
-            echo '<script>setTimeout(function(){';
-            echo 'document.getElementById(\'wpuimportvimeo_archives_form\').submit();';
-            echo '},2000);</script>';
+            $html .= '<p id="autoreload-message">' . sprintf(__('Autoreload in %s seconds', 'wpuimportvimeo'), 2) . '. <a onclick="clearTimeout(window.timeoutReload);this.parentNode.parentNode.removeChild(this.parentNode);return false;" href="#">' . __('Stop', 'wpuimportvimeo') . '</a></p>';
+            $html .= '<script>window.timeoutReload = setTimeout(function(){';
+            $html .= 'document.getElementById(\'wpuimportvimeo_archives_form\').submit();';
+            $html .= '},2000);</script>';
         }
-        if ($_paged > 0) echo '<div style="opacity: 0.5;">';
+        if ($_paged > 0) {
+            $html .= '<div style="opacity: 0.5;">';
+        }
+        ob_start();
+        wp_nonce_field('wpuimportvimeo_archives');
         submit_button(__('Import old videos', 'wpuimportvimeo'), 'primary', 'import_now');
-        if ($_paged > 0) echo '</div>';
-        echo '</form>';
+        $html .= ob_get_clean();
+        if ($_paged > 0) {
+            $html .= '</div>';
+        }
+
+        $html .= '</form>';
+
+        $this->display_iframe_html($html);
 
         die;
+    }
+
+    public function display_iframe_html($html) {
+        echo '<!DOCTYPE HTML><html lang="fr-FR"><head><meta charset="UTF-8" />';
+        echo '<link rel="stylesheet" type="text/css" href="'.includes_url().'/css/buttons.css?ver='.date('dmYH').'" />';
+        echo '</head><body class="wp-core-ui" style="padding:0;margin:0;">';
+        echo $html;
+        echo '</body></html>';
     }
 
     public function postAction() {
@@ -480,9 +499,9 @@ class WPUImportVimeo {
             'box' => 'vimeo_settings',
             'name' => 'Duration'
         );
-        $fields['wpuimportvimeo_downloads'] = array(
+        $fields['wpuimportvimeo_files'] = array(
             'box' => 'vimeo_settings',
-            'name' => 'Download links',
+            'name' => 'Video files',
             'type' => 'table',
             'columns' => array(
                 'quality' => array(
@@ -495,7 +514,10 @@ class WPUImportVimeo {
                     'name' => 'Height'
                 ),
                 'link' => array(
-                    'name' => 'link'
+                    'name' => 'Link'
+                ),
+                'link_secure' => array(
+                    'name' => 'Link secure'
                 )
             )
         );
@@ -519,6 +541,7 @@ class WPUImportVimeo {
 
     public function uninstall() {
         delete_option($this->option_id);
+        delete_post_meta_by_key('wpuimportvimeo_files');
         delete_post_meta_by_key('wpuimportvimeo_downloads');
         delete_post_meta_by_key('wpuimportvimeo_id');
         delete_post_meta_by_key('wpuimportvimeo_link');
