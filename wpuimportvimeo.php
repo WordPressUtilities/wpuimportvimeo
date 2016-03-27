@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Import Vimeo
 Plugin URI: https://github.com/WordPressUtilities/wpuimportvimeo
-Version: 0.7.1
+Version: 0.8
 Description: Import latest vimeo videos.
 Author: Darklg
 Author URI: http://darklg.me/
@@ -23,6 +23,9 @@ class WPUImportVimeo {
         ));
         add_action('init', array(&$this,
             'init'
+        ));
+        add_action('template_redirect', array(&$this,
+            'download_link'
         ));
     }
 
@@ -183,7 +186,17 @@ class WPUImportVimeo {
     }
 
     public function import() {
-        return $this->import_videos_to_posts($this->get_latest_videos_for_me());
+        // If importing : stop
+        if (get_transient('wpuimportvimeo__is_importing') !== false) {
+            return false;
+        }
+        // Block other imports ( for two minutes max )
+        set_transient('wpuimportvimeo__is_importing', 1, 5 * MINUTE_IN_SECONDS);
+        // Launch import
+        $import = $this->import_videos_to_posts($this->get_latest_videos_for_me());
+        // Delete transient : Import has successfully finished
+        delete_transient('wpuimportvimeo__is_importing');
+        return $import;
     }
 
     public function import_videos_to_posts($_videos) {
@@ -302,6 +315,51 @@ class WPUImportVimeo {
             return 0;
         }
         return ($a->width < $b->width) ? -1 : 1;
+    }
+
+    /* ----------------------------------------------------------
+      Download link
+    ---------------------------------------------------------- */
+
+    public function get_download_link($post_id) {
+        return site_url() . '?download_vimeo_id=' . $post_id;
+    }
+
+    public function download_link() {
+        if (!isset($_GET['download_vimeo_id']) || !is_numeric($_GET['download_vimeo_id'])) {
+            wp_redirect(site_url());
+            return false;
+        }
+        $video_id = $this->get_video_id_from_string(get_post_meta($_GET['download_vimeo_id'], 'wpuimportvimeo_id', 1));
+        $video = $this->get_video_by_id($video_id);
+
+        // Check if downloadable
+        if (!property_exists($video, 'download')) {
+            wp_redirect(site_url());
+            return false;
+        }
+
+        $width = 0;
+        $link = '';
+
+        // Return biggest source link
+        foreach ($video->download as $video_dl) {
+            if ($video_dl->quality == 'source') {
+                continue;
+            }
+            if ($video_dl->width > $width) {
+                $width = $video_dl->width;
+                $link = $video_dl->link;
+            }
+        }
+
+        // Redirect to file
+        if (!empty($link)) {
+            wp_redirect($link);
+            die;
+        }
+        wp_redirect(site_url());
+        return false;
     }
 
     /* ----------------------------------------------------------
