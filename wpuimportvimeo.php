@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Import Vimeo
 Plugin URI: https://github.com/WordPressUtilities/wpuimportvimeo
-Version: 0.8
+Version: 0.8.1
 Description: Import latest vimeo videos.
 Author: Darklg
 Author URI: http://darklg.me/
@@ -185,9 +185,13 @@ class WPUImportVimeo {
         return $_body;
     }
 
+    public function is_importing() {
+        return get_transient('wpuimportvimeo__is_importing') !== false;
+    }
+
     public function import() {
         // If importing : stop
-        if (get_transient('wpuimportvimeo__is_importing') !== false) {
+        if ($this->is_importing()) {
             return false;
         }
         // Block other imports ( for two minutes max )
@@ -422,15 +426,19 @@ class WPUImportVimeo {
             }
             echo '<p>' . sprintf(__('Next automated import in %s’%s’’', 'wpuimportvimeo'), $minutes, $seconds) . '</p>';
             echo '<p class="submit">';
-            submit_button(__('Import now', 'wpuimportvimeo'), 'primary', 'import_now', false);
-            echo ' ';
+            if (!$this->is_importing()) {
+                submit_button(__('Import now', 'wpuimportvimeo'), 'primary', 'import_now', false);
+                echo ' ';
+            }
             submit_button(__('Test API', 'wpuimportvimeo'), 'primary', 'test_api', false);
             echo '</p>';
             echo '</form>';
             echo '<hr />';
-            echo '<h2>' . __('Old videos', 'wpuimportvimeo') . '</h2>';
-            echo '<iframe style="height:130px;width:100%;" src="' . wp_nonce_url(get_admin_url(null, '/?wpuimportvimeo_iframe=1'), 'wpuimportvimeo_archives') . '" frameborder="0"></iframe>';
-            echo '<hr />';
+            if (!$this->is_importing()) {
+                echo '<h2>' . __('Old videos', 'wpuimportvimeo') . '</h2>';
+                echo '<iframe style="height:130px;width:100%;" src="' . wp_nonce_url(get_admin_url(null, '/?wpuimportvimeo_iframe=1'), 'wpuimportvimeo_archives') . '" frameborder="0"></iframe>';
+                echo '<hr />';
+            }
         }
 
         echo '<form action="' . admin_url('options.php') . '" method="post">';
@@ -513,11 +521,16 @@ class WPUImportVimeo {
     public function postAction() {
         if (isset($_POST['import_now'])) {
             $nb_imports = $this->import();
-            if ($nb_imports > 0) {
-                $this->messages->set_message('imported_nb', sprintf(__('Imported videos : %s', 'wpuimportvimeo'), $nb_imports));
+            if ($nb_imports === false) {
+                $this->messages->set_message('already_import', sprintf(__('An import is already running', 'wpuimportvimeo'), $nb_imports));
             } else {
-                $this->messages->set_message('imported_0', __('No new imports', 'wpuimportvimeo'), 'created');
+                if ($nb_imports > 0) {
+                    $this->messages->set_message('imported_nb', sprintf(__('Imported videos : %s', 'wpuimportvimeo'), $nb_imports));
+                } else {
+                    $this->messages->set_message('imported_0', __('No new imports', 'wpuimportvimeo'), 'created');
+                }
             }
+
         }
         if (isset($_POST['test_api'])) {
             $videos = $this->get_latest_videos_for_me(1);
