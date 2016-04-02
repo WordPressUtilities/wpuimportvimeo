@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Import Vimeo
 Plugin URI: https://github.com/WordPressUtilities/wpuimportvimeo
-Version: 0.8.2
+Version: 0.8.3
 Description: Import latest vimeo videos.
 Author: Darklg
 Author URI: http://darklg.me/
@@ -331,7 +331,6 @@ class WPUImportVimeo {
 
     public function download_link() {
         if (!isset($_GET['download_vimeo_id']) || !is_numeric($_GET['download_vimeo_id'])) {
-            wp_redirect(site_url());
             return false;
         }
         $video_id = $this->get_video_id_from_string(get_post_meta($_GET['download_vimeo_id'], 'wpuimportvimeo_id', 1));
