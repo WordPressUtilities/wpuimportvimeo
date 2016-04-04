@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Import Vimeo
 Plugin URI: https://github.com/WordPressUtilities/wpuimportvimeo
-Version: 0.8.3
+Version: 0.8.4
 Description: Import latest vimeo videos.
 Author: Darklg
 Author URI: http://darklg.me/
@@ -240,6 +240,7 @@ class WPUImportVimeo {
         $post_id = wp_insert_post($video_post);
 
         $this->update_metas_from_video($post_id, $video);
+        $this->update_image_from_video($post_id, $video);
 
         return $post_id;
     }
@@ -260,13 +261,6 @@ class WPUImportVimeo {
     }
 
     public function update_metas_from_video($post_id, $video) {
-        global $wpdb;
-
-        // Add required classes
-        require_once ABSPATH . 'wp-admin/includes/media.php';
-        require_once ABSPATH . 'wp-admin/includes/file.php';
-        require_once ABSPATH . 'wp-admin/includes/image.php';
-
         $video_id = $this->get_video_id_from_string($video->uri);
 
         // Files links are available
@@ -295,6 +289,15 @@ class WPUImportVimeo {
         update_post_meta($post_id, 'wpuimportvimeo_height', $video->height);
         update_post_meta($post_id, 'wpuimportvimeo_duration', $video->duration);
 
+    }
+
+    public function update_image_from_video($post_id, $video) {
+        global $wpdb;
+        // Add required classes
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+
         // Import thumbnail
         if (is_array($video->pictures->sizes) && !empty($video->pictures->sizes)) {
 
@@ -311,10 +314,12 @@ class WPUImportVimeo {
 
             set_post_thumbnail($post_id, $att_id);
         }
-
     }
 
     public function video_array_sort_by_width($a, $b) {
+        if (!property_exists($a, 'width') || !property_exists($b, 'width')) {
+            return 0;
+        }
         if ($a->width == $b->width) {
             return 0;
         }
@@ -350,7 +355,7 @@ class WPUImportVimeo {
             if ($video_dl->quality == 'source') {
                 continue;
             }
-            if ($video_dl->width > $width) {
+            if (property_exists($video_dl, 'width') && $video_dl->width > $width) {
                 $width = $video_dl->width;
                 $link = $video_dl->link;
             }
@@ -376,6 +381,7 @@ class WPUImportVimeo {
     }
 
     public function callback_display_metabox($post) {
+        echo '<p><label><input type="checkbox" name="update_image" value="1" />' . __('Replace image', 'wpuimportvimeo') . '</label></p>';
         echo '<p><label><input type="checkbox" name="update_content" value="1" />' . __('Replace title & content', 'wpuimportvimeo') . '</label></p>';
         echo '<p>';
         submit_button(__('Reload', 'wpuimportvimeo'), 'primary', 'reload_vimeo', false);
@@ -391,6 +397,9 @@ class WPUImportVimeo {
             $video = $this->get_video_by_id($video_id);
             if ($video !== false) {
                 $this->update_metas_from_video($post_id, $video);
+                if (isset($_POST['update_image'])) {
+                    $this->update_image_from_video($post_id, $video);
+                }
                 if (isset($_POST['update_content'])) {
                     $this->update_content_from_video($post_id, $video);
                 }
