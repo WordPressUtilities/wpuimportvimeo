@@ -18,5 +18,5 @@ TODO
 * [x] Add an uninstall.
 * [x] Setting to import as Draft.
 * [x] Add a method to import initial videos.
-* [ ] Add a method to kill video import.
+* [x] Add a method to kill video import.
 * [ ] Add some hooks.
