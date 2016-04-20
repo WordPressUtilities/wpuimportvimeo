@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Import Vimeo
 Plugin URI: https://github.com/WordPressUtilities/wpuimportvimeo
-Version: 0.8.10
+Version: 0.9
 Description: Import latest vimeo videos.
 Author: Darklg
 Author URI: http://darklg.me/
@@ -27,10 +27,17 @@ class WPUImportVimeo {
         add_action('template_redirect', array(&$this,
             'download_link'
         ));
+        add_action($this->cronhook, array(&$this,
+            'import'
+        ));
+
+        // Cron
+        include 'inc/WPUBaseCron.php';
+        $this->basecron = new \wpuimportvimeo\WPUBaseCron();
     }
 
     public function set_options() {
-
+        $this->cronhook = 'wpuimportvimeo__cron_hook';
         $this->post_type = apply_filters('wpuimportvimeo_posttypehook', 'vimeo_videos');
         $this->options = array(
             'plugin_publicname' => 'Vimeo Import',
@@ -115,11 +122,18 @@ class WPUImportVimeo {
     }
 
     public function plugins_loaded() {
+
+        $this->basecron->init(array(
+            'pluginname' => $this->options['plugin_name'],
+            'cronhook' => $this->cronhook,
+            'croninterval' => 3600
+        ));
+
+        load_plugin_textdomain('wpuimportvimeo', false, dirname(plugin_basename(__FILE__)) . '/lang/');
+
         if (!is_admin()) {
             return;
         }
-
-        load_plugin_textdomain('wpuimportvimeo', false, dirname(plugin_basename(__FILE__)) . '/lang/');
 
         // Admin page
         add_action('admin_menu', array(&$this,
@@ -431,7 +445,7 @@ class WPUImportVimeo {
             echo '<h2>' . __('Tools') . '</h2>';
             echo '<form action="' . admin_url('admin-post.php') . '" method="post">';
             echo '<input type="hidden" name="action" value="wpuimportvimeo_postaction">';
-            $schedule = wp_next_scheduled('wpuimportvimeo__cron_hook');
+            $schedule = wp_next_scheduled($this->cronhook);
             $seconds = $schedule - time();
             $minutes = 0;
             if ($seconds >= 60) {
@@ -515,7 +529,9 @@ class WPUImportVimeo {
             }
             ob_start();
             wp_nonce_field('wpuimportvimeo_archives', '_wpnonce', false);
-            submit_button(__('Import old videos', 'wpuimportvimeo'), 'primary', 'import_now');
+
+            $button_title = ($_paged > 0) ? __('Continue', 'wpuimportvimeo') : __('Import old videos', 'wpuimportvimeo');
+            submit_button($button_title, 'primary', 'import_now');
             $html .= ob_get_clean();
             if ($_paged > 0) {
                 $html .= '</div>';
@@ -619,13 +635,10 @@ class WPUImportVimeo {
     ---------------------------------------------------------- */
 
     public function install() {
-        wp_clear_scheduled_hook('wpuimportvimeo__cron_hook');
-        wp_schedule_event(time() + 3600, 'hourly', 'wpuimportvimeo__cron_hook');
         flush_rewrite_rules();
     }
 
     public function deactivation() {
-        wp_clear_scheduled_hook('wpuimportvimeo__cron_hook');
         flush_rewrite_rules();
     }
 
@@ -639,6 +652,7 @@ class WPUImportVimeo {
         delete_post_meta_by_key('wpuimportvimeo_height');
         delete_post_meta_by_key('wpuimportvimeo_duration');
         flush_rewrite_rules();
+        $this->basecron->uninstall();
     }
 
 }
@@ -651,9 +665,3 @@ register_activation_hook(__FILE__, array(&$WPUImportVimeo,
 register_deactivation_hook(__FILE__, array(&$WPUImportVimeo,
     'deactivation'
 ));
-
-add_action('wpuimportvimeo__cron_hook', 'wpuimportvimeo__import');
-function wpuimportvimeo__import() {
-    global $WPUImportVimeo;
-    $WPUImportVimeo->import();
-}
