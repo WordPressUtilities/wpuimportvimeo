@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Import Vimeo\n"
-"POT-Creation-Date: 2016-04-19 19:30+0200\n"
+"POT-Creation-Date: 2016-04-20 11:51+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -16,7 +16,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: ../.\n"
 
 #: .././inc/WPUBaseSettings.php:39 .././wpuimportvimeo.php:79
-#: .././wpuimportvimeo.php:416
+#: .././wpuimportvimeo.php:420
 msgid "Import Settings"
 msgstr "Réglages d'import"
 
@@ -36,104 +36,112 @@ msgstr "Les articles sont créés avec un statut \"brouillon\"."
 msgid "Import as draft"
 msgstr "Importer comme brouillon"
 
-#: .././wpuimportvimeo.php:380
+#: .././wpuimportvimeo.php:384
 msgid "Reload infos"
 msgstr "Recharger les infos"
 
-#: .././wpuimportvimeo.php:384
+#: .././wpuimportvimeo.php:388
 msgid "Replace image"
 msgstr "Remplacer l'image"
 
-#: .././wpuimportvimeo.php:385
+#: .././wpuimportvimeo.php:389
 msgid "Replace title & content"
 msgstr "Remplacer le titre et le contenu"
 
-#: .././wpuimportvimeo.php:387
+#: .././wpuimportvimeo.php:391
 msgid "Reload"
 msgstr "Recharger"
 
-#: .././wpuimportvimeo.php:416
+#: .././wpuimportvimeo.php:420
 msgid "Settings"
 msgstr "Réglages"
 
-#: .././wpuimportvimeo.php:426
+#: .././wpuimportvimeo.php:431
 msgid "Tools"
 msgstr "Outils"
 
-#: .././wpuimportvimeo.php:436
+#: .././wpuimportvimeo.php:441
 #, php-format
 msgid "Next automated import in %s’%s’’"
 msgstr "Prochain import automatique dans %s min et %s s"
 
-#: .././wpuimportvimeo.php:439
+#: .././wpuimportvimeo.php:444
 msgid "Import now"
 msgstr "Importer maintenant"
 
-#: .././wpuimportvimeo.php:442
+#: .././wpuimportvimeo.php:447
 msgid "Test API"
 msgstr "Tester l'API"
 
-#: .././wpuimportvimeo.php:447
+#: .././wpuimportvimeo.php:452
 msgid "Old videos"
 msgstr "Anciennes vidéos"
 
-#: .././wpuimportvimeo.php:456
+#: .././wpuimportvimeo.php:461
 msgid "Save Changes"
 msgstr "Sauvegarder les modifications"
 
-#: .././wpuimportvimeo.php:481
+#: .././wpuimportvimeo.php:486
 msgid "Everything seems to be imported"
 msgstr "Tout semble être importé"
 
-#: .././wpuimportvimeo.php:483
+#: .././wpuimportvimeo.php:488
 msgid "There seems to be a problem with the API. Please try again in a moment."
 msgstr ""
 "Il semble y avoir un problème avec l'API. Veuillez réessayer dans un moment."
 
-#: .././wpuimportvimeo.php:492
+#: .././wpuimportvimeo.php:497
 #, php-format
 msgid "Importing %s/%s"
 msgstr "Importation %s/%s"
 
-#: .././wpuimportvimeo.php:501
+#: .././wpuimportvimeo.php:506
+#, php-format
+msgid "Everything is now imported (%s/%s)"
+msgstr "Tout est désormais importé (%s/%s)"
+
+#: .././wpuimportvimeo.php:509
 #, php-format
 msgid "Autoreload in %s seconds"
 msgstr "Rechargement automatique dans %s secondes"
 
-#: .././wpuimportvimeo.php:501
+#: .././wpuimportvimeo.php:509
 msgid "Stop"
 msgstr "Stop"
 
-#: .././wpuimportvimeo.php:504
+#: .././wpuimportvimeo.php:512
 msgid "Loading ..."
 msgstr "Chargement en cours…"
 
-#: .././wpuimportvimeo.php:512
+#: .././wpuimportvimeo.php:518
 msgid "Import old videos"
 msgstr "Importer des vidéos anciennes"
 
-#: .././wpuimportvimeo.php:537
+#: .././wpuimportvimeo.php:543
 msgid "An import is already running"
 msgstr "Une importation est déjà en cours d'exécution"
 
-#: .././wpuimportvimeo.php:540
+#: .././wpuimportvimeo.php:546
 #, php-format
 msgid "Imported videos : %s"
 msgstr "Vidéos importées : %s"
 
-#: .././wpuimportvimeo.php:542
+#: .././wpuimportvimeo.php:548
 msgid "No new imports"
 msgstr "Aucun nouvel import"
 
-#: .././wpuimportvimeo.php:550
+#: .././wpuimportvimeo.php:556
 msgid "The API works great !"
 msgstr "L'API fonctionne très bien !"
 
-#: .././wpuimportvimeo.php:552
+#: .././wpuimportvimeo.php:558
 msgid "The credentials seems invalid or the user do not have videos."
 msgstr ""
 "Les informations d'identification semblent invalides ou l'utilisateur n'a "
 "pas de vidéos."
+
+#~ msgid "Everything is now imported (%s/%s) !"
+#~ msgstr "Tout est maintenant importé (%s/%s) !"
 
 #~ msgid "Parse archives"
 #~ msgstr "Analyser les archives"

@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Import Vimeo
 Plugin URI: https://github.com/WordPressUtilities/wpuimportvimeo
-Version: 0.8.9
+Version: 0.8.10
 Description: Import latest vimeo videos.
 Author: Darklg
 Author URI: http://darklg.me/
@@ -425,6 +425,7 @@ class WPUImportVimeo {
     public function admin_settings() {
 
         echo '<div class="wrap"><h1>' . get_admin_page_title() . '</h1>';
+
         settings_errors($this->settings_details['option_id']);
         if (!empty($this->token)) {
             echo '<h2>' . __('Tools') . '</h2>';
@@ -459,7 +460,7 @@ class WPUImportVimeo {
         do_settings_sections($this->options['plugin_id']);
         echo submit_button(__('Save Changes', 'wpuimportvimeo'));
         echo '</form>';
-        echo '</div>';
+
         echo '</div>';
     }
 
@@ -501,24 +502,25 @@ class WPUImportVimeo {
         $html .= '<form id="wpuimportvimeo_archives_form" method="get" action="' . get_admin_url() . '">';
         $html .= '<input type="hidden" name="wpuimportvimeo_iframe" value="1">';
         $html .= '<input type="hidden" name="paged" value="' . ($_paged + 1) . '">';
-        if ($_paged > 0) {
-            $html .= '<p id="autoreload-message">' . sprintf(__('Autoreload in %s seconds', 'wpuimportvimeo'), 2) . '. <a onclick="clearTimeout(window.timeoutReload);this.parentNode.parentNode.removeChild(this.parentNode);return false;" href="#">' . __('Stop', 'wpuimportvimeo') . '</a></p>';
-            $html .= '<script>window.timeoutReload = setTimeout(function(){';
-            $html .= 'document.getElementById(\'wpuimportvimeo_archives_form\').submit();';
-            $html .= 'document.getElementById(\'wpuimportvimeo_archives_form\').innerHTML = "' . __('Loading ...', 'wpuimportvimeo') . '";';
-            $html .= '},2000);</script>';
+        if ($_paged > 0 && $_currentPageStart >= $_response->total) {
+            $html = '<p>' . sprintf(__('Everything is now imported (%s/%s)', 'wpuimportvimeo'), $_currentPageStart, $_response->total) . '</p>';
+        } else {
+            if ($_paged > 0) {
+                $html .= '<p id="autoreload-message">' . sprintf(__('Autoreload in %s seconds', 'wpuimportvimeo'), 2) . '. <a onclick="clearTimeout(window.timeoutReload);this.parentNode.parentNode.removeChild(this.parentNode);return false;" href="#">' . __('Stop', 'wpuimportvimeo') . '</a></p>';
+                $html .= '<script>window.timeoutReload = setTimeout(function(){';
+                $html .= 'document.getElementById(\'wpuimportvimeo_archives_form\').submit();';
+                $html .= 'document.getElementById(\'wpuimportvimeo_archives_form\').innerHTML = "' . __('Loading ...', 'wpuimportvimeo') . '";';
+                $html .= '},2000);</script>';
+                $html .= '<div style="opacity: 0.5;">';
+            }
+            ob_start();
+            wp_nonce_field('wpuimportvimeo_archives', '_wpnonce', false);
+            submit_button(__('Import old videos', 'wpuimportvimeo'), 'primary', 'import_now');
+            $html .= ob_get_clean();
+            if ($_paged > 0) {
+                $html .= '</div>';
+            }
         }
-        if ($_paged > 0) {
-            $html .= '<div style="opacity: 0.5;">';
-        }
-        ob_start();
-        wp_nonce_field('wpuimportvimeo_archives', '_wpnonce', false);
-        submit_button(__('Import old videos', 'wpuimportvimeo'), 'primary', 'import_now');
-        $html .= ob_get_clean();
-        if ($_paged > 0) {
-            $html .= '</div>';
-        }
-
         $html .= '</form>';
 
         $this->display_iframe_html($html);
