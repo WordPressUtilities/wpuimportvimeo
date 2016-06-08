@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Import Vimeo
 Plugin URI: https://github.com/WordPressUtilities/wpuimportvimeo
-Version: 0.9
+Version: 0.10
 Description: Import latest vimeo videos.
 Author: Darklg
 Author URI: http://darklg.me/
@@ -172,10 +172,10 @@ class WPUImportVimeo {
         // Get videos
         $_url = 'https://api.vimeo.com/me/videos?page=' . $paged . '&direction=' . $order . '&per_page=' . $nb . '&access_token=' . $this->token;
         $_request = wp_remote_get($_url);
-        if (!is_array($_request) || !isset($_request['body'])) {
+        if (is_wp_error($_request)) {
             return false;
         }
-        $_body = json_decode($_request['body']);
+        $_body = json_decode(wp_remote_retrieve_body($_request));
         if (!is_object($_body) || !isset($_body->data)) {
             return false;
         }
@@ -189,10 +189,10 @@ class WPUImportVimeo {
         // Get videos
         $_url = 'https://api.vimeo.com/videos/' . $video_id . '?access_token=' . $this->token;
         $_request = wp_remote_get($_url);
-        if (!is_array($_request) || !isset($_request['body'])) {
+        if (is_wp_error($_request)) {
             return false;
         }
-        $_body = json_decode($_request['body']);
+        $_body = json_decode(wp_remote_retrieve_body($_request));
         if (!is_object($_body) || !isset($_body->uri)) {
             return false;
         }
@@ -401,6 +401,7 @@ class WPUImportVimeo {
     public function callback_display_metabox($post) {
         echo '<p><label><input type="checkbox" name="update_image" value="1" />' . __('Replace image', 'wpuimportvimeo') . '</label></p>';
         echo '<p><label><input type="checkbox" name="update_content" value="1" />' . __('Replace title & content', 'wpuimportvimeo') . '</label></p>';
+        echo '<p><label><input type="checkbox" name="update_metas" value="1" />' . __('Replace metadatas', 'wpuimportvimeo') . '</label></p>';
         echo '<p>';
         submit_button(__('Reload', 'wpuimportvimeo'), 'primary', 'reload_vimeo', false);
         echo '</p>';
@@ -420,6 +421,9 @@ class WPUImportVimeo {
                 }
                 if (isset($_POST['update_content'])) {
                     $this->update_content_from_video($post_id, $video);
+                }
+                if (isset($_POST['update_metas'])) {
+                    $this->update_metas_from_video($post_id, $video);
                 }
             }
         }
