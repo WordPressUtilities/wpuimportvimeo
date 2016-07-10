@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Import Vimeo\n"
-"POT-Creation-Date: 2016-06-08 10:34+0200\n"
+"POT-Creation-Date: 2016-07-10 23:07+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -15,8 +15,8 @@ msgstr ""
 "X-Poedit-KeywordsList: __;_e;_x:1,2c\n"
 "X-Poedit-SearchPath-0: ../.\n"
 
-#: .././inc/WPUBaseSettings.php:39 .././wpuimportvimeo.php:86
-#: .././wpuimportvimeo.php:438
+#: .././inc/WPUBaseSettings.php:39 .././wpuimportvimeo.php:88
+#: .././wpuimportvimeo.php:440
 msgid "Import Settings"
 msgstr "Réglages d'import"
 
@@ -24,129 +24,145 @@ msgstr "Réglages d'import"
 msgid "Settings saved."
 msgstr "Réglages enregistrés."
 
-#: .././wpuimportvimeo.php:93
+#: .././wpuimportvimeo.php:95
 msgid "API Token"
 msgstr "Token API"
 
-#: .././wpuimportvimeo.php:98
+#: .././wpuimportvimeo.php:100
 msgid "Posts are created with a draft status."
 msgstr "Les articles sont créés avec un statut \"brouillon\"."
 
-#: .././wpuimportvimeo.php:99
+#: .././wpuimportvimeo.php:101
 msgid "Import as draft"
 msgstr "Importer comme brouillon"
 
-#: .././wpuimportvimeo.php:398
+#: .././wpuimportvimeo.php:400
 msgid "Reload infos"
 msgstr "Recharger les infos"
 
-#: .././wpuimportvimeo.php:402
+#: .././wpuimportvimeo.php:404
 msgid "Replace image"
 msgstr "Remplacer l'image"
 
-#: .././wpuimportvimeo.php:403
+#: .././wpuimportvimeo.php:405
 msgid "Replace title & content"
 msgstr "Remplacer le titre et le contenu"
 
-#: .././wpuimportvimeo.php:404
+#: .././wpuimportvimeo.php:406
 msgid "Replace metadatas"
 msgstr "Remplacer les métadates"
 
-#: .././wpuimportvimeo.php:406
+#: .././wpuimportvimeo.php:408
 msgid "Reload"
 msgstr "Recharger"
 
-#: .././wpuimportvimeo.php:438
+#: .././wpuimportvimeo.php:440
 msgid "Settings"
 msgstr "Réglages"
 
-#: .././wpuimportvimeo.php:449
+#: .././wpuimportvimeo.php:451
 msgid "Tools"
 msgstr "Outils"
 
-#: .././wpuimportvimeo.php:459
+#: .././wpuimportvimeo.php:461
 #, php-format
 msgid "Next automated import in %s’%s’’"
 msgstr "Prochain import automatique dans %s min et %s s"
 
-#: .././wpuimportvimeo.php:462
+#: .././wpuimportvimeo.php:464
 msgid "Import now"
 msgstr "Importer maintenant"
 
-#: .././wpuimportvimeo.php:465
+#: .././wpuimportvimeo.php:467
 msgid "Test API"
 msgstr "Tester l'API"
 
-#: .././wpuimportvimeo.php:470
+#: .././wpuimportvimeo.php:472
 msgid "Old videos"
 msgstr "Anciennes vidéos"
 
-#: .././wpuimportvimeo.php:479
+#: .././wpuimportvimeo.php:477
+#, php-format
+msgid ""
+"You need an API Token, please <a %s>create an application here</a>, then "
+"generate the token."
+msgstr ""
+"Vous avez besoin d’un jeton d’API, veuillez <a %s>créer une application ici</"
+"a>, puis générez le jeton."
+
+#: .././wpuimportvimeo.php:483
 msgid "Save Changes"
 msgstr "Sauvegarder les modifications"
 
-#: .././wpuimportvimeo.php:504
+#: .././wpuimportvimeo.php:508
 msgid "Everything seems to be imported"
 msgstr "Tout semble être importé"
 
-#: .././wpuimportvimeo.php:506
+#: .././wpuimportvimeo.php:510
 msgid "There seems to be a problem with the API. Please try again in a moment."
 msgstr ""
 "Il semble y avoir un problème avec l'API. Veuillez réessayer dans un moment."
 
-#: .././wpuimportvimeo.php:515
+#: .././wpuimportvimeo.php:519
 #, php-format
 msgid "Importing %s/%s"
 msgstr "Importation %s/%s"
 
-#: .././wpuimportvimeo.php:524
+#: .././wpuimportvimeo.php:528
 #, php-format
 msgid "Everything is now imported (%s/%s)"
 msgstr "Tout est désormais importé (%s/%s)"
 
-#: .././wpuimportvimeo.php:527
+#: .././wpuimportvimeo.php:531
 #, php-format
 msgid "Autoreload in %s seconds"
 msgstr "Rechargement automatique dans %s secondes"
 
-#: .././wpuimportvimeo.php:527
+#: .././wpuimportvimeo.php:531
 msgid "Stop"
 msgstr "Stop"
 
-#: .././wpuimportvimeo.php:530
+#: .././wpuimportvimeo.php:534
 msgid "Loading ..."
 msgstr "Chargement en cours…"
 
-#: .././wpuimportvimeo.php:537
+#: .././wpuimportvimeo.php:541
 msgid "Continue"
 msgstr "Continuer"
 
-#: .././wpuimportvimeo.php:537
+#: .././wpuimportvimeo.php:541
 msgid "Import old videos"
 msgstr "Importer des vidéos anciennes"
 
-#: .././wpuimportvimeo.php:563
+#: .././wpuimportvimeo.php:567
 msgid "An import is already running"
 msgstr "Une importation est déjà en cours d'exécution"
 
-#: .././wpuimportvimeo.php:566
+#: .././wpuimportvimeo.php:570
 #, php-format
 msgid "Imported videos : %s"
 msgstr "Vidéos importées : %s"
 
-#: .././wpuimportvimeo.php:568
+#: .././wpuimportvimeo.php:572
 msgid "No new imports"
 msgstr "Aucun nouvel import"
 
-#: .././wpuimportvimeo.php:576
+#: .././wpuimportvimeo.php:580
 msgid "The API works great !"
 msgstr "L'API fonctionne très bien !"
 
-#: .././wpuimportvimeo.php:578
+#: .././wpuimportvimeo.php:582
 msgid "The credentials seems invalid or the user do not have videos."
 msgstr ""
 "Les informations d'identification semblent invalides ou l'utilisateur n'a "
 "pas de vidéos."
+
+#~ msgid ""
+#~ "You need an API Token, please <a %s >create an application here</a>, then "
+#~ "generate the token."
+#~ msgstr ""
+#~ "Vous avez besoin d’un jeton d’API, veuillez <a %s>créer une application "
+#~ "ici</a>, puis générez le jeton."
 
 #~ msgid "Everything is now imported (%s/%s) !"
 #~ msgstr "Tout est maintenant importé (%s/%s) !"

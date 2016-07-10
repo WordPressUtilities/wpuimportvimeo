@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Import Vimeo
 Plugin URI: https://github.com/WordPressUtilities/wpuimportvimeo
-Version: 0.10
+Version: 0.10.1
 Description: Import latest vimeo videos.
 Author: Darklg
 Author URI: http://darklg.me/
@@ -218,7 +218,7 @@ class WPUImportVimeo {
     }
 
     public function import_videos_to_posts($_videos) {
-        if (!is_array($_videos)) {
+        if (empty($this->token) || !is_array($_videos)) {
             return 0;
         }
         $latest_videos_ids = $this->get_last_imported_videos_ids();
@@ -471,6 +471,8 @@ class WPUImportVimeo {
                 echo '<iframe style="height:130px;width:100%;" src="' . wp_nonce_url(get_admin_url(null, '/?wpuimportvimeo_iframe=1'), 'wpuimportvimeo_archives') . '" frameborder="0"></iframe>';
                 echo '<hr />';
             }
+        } else {
+            echo '<p>' . sprintf(__('You need an API Token, please <a %s>create an application here</a>, then generate the token.', 'wpuimportvimeo'), 'target="_blank" href="https://developer.vimeo.com/apps"') . '</p>';
         }
 
         echo '<form action="' . admin_url('options.php') . '" method="post">';
@@ -640,10 +642,12 @@ class WPUImportVimeo {
 
     public function install() {
         flush_rewrite_rules();
+        $this->basecron->install();
     }
 
     public function deactivation() {
         flush_rewrite_rules();
+        $this->basecron->uninstall();
     }
 
     public function uninstall() {
