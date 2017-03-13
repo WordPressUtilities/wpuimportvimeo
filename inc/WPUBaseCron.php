@@ -4,7 +4,7 @@ namespace wpuimportvimeo;
 /*
 Class Name: WPU Base Cron
 Description: A class to handle crons
-Version: 0.1.1
+Version: 0.2
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -12,17 +12,22 @@ License URI: http://opensource.org/licenses/MIT
 */
 
 class WPUBaseCron {
-    public function __construct() {}
+    public $ns = '';
+    public $pluginname = '';
+    public $cronhook = '';
 
-    public function init($settings = array()) {
+    public function __construct($settings = array()) {
+        $this->ns = preg_replace('/\W+/', '', __NAMESPACE__);
+
         /* Settings */
-        $this->pluginname = isset($settings['pluginname']) ? $settings['pluginname'] : 'WPUBaseCron';
-        $this->cronhook = isset($settings['cronhook']) ? $settings['cronhook'] : 'wpubasecron';
-        $this->croninterval = isset($settings['croninterval']) ? $settings['croninterval'] : 600;
+        $this->pluginname = isset($settings['pluginname']) ? $settings['pluginname'] : ucfirst($this->ns);
+        $this->cronhook = isset($settings['cronhook']) ? $settings['cronhook'] : $this->ns . '__cron_hook';
+        $this->croninterval = isset($settings['croninterval']) ? $settings['croninterval'] : 3600;
 
         /* Internal values */
         $this->cronoption = $this->cronhook . '_croninterval';
         $this->cronschedule = $this->cronhook . '_schedule';
+        $this->cronlastexec = $this->cronhook . '_lastexec';
 
         /* Hooks */
         add_filter('cron_schedules', array(&$this,
@@ -31,6 +36,9 @@ class WPUBaseCron {
         add_action('init', array(&$this,
             'check_cron'
         ));
+        add_action($this->cronhook, array(&$this,
+            'store_execution_time'
+        ), 99);
     }
 
     /* Create schedule */
@@ -52,6 +60,49 @@ class WPUBaseCron {
         }
     }
 
+    /* ----------------------------------------------------------
+      Time
+    ---------------------------------------------------------- */
+
+    /* Get time */
+    public function get_time_details($schedule, $delta) {
+        if (!is_numeric($schedule) || !is_numeric($delta)) {
+            return false;
+        }
+        $minutes = 0;
+        $seconds = abs($delta);
+        if ($seconds >= 60) {
+            $minutes = (int) ($seconds / 60);
+            $seconds = $seconds % 60;
+        }
+        return array(
+            'timestamp' => $schedule,
+            'delta' => $delta,
+            'min' => $minutes,
+            'sec' => $seconds
+        );
+    }
+
+    /* Get next scheduled */
+    public function get_next_scheduled() {
+        $schedule = wp_next_scheduled($this->cronhook);
+        return $this->get_time_details($schedule, $schedule - time());
+    }
+
+    /* Get previous execution */
+    public function get_previous_exec() {
+        $schedule = get_option($this->cronlastexec);
+        return $this->get_time_details($schedule, time() - $schedule);
+    }
+
+    public function store_execution_time() {
+        update_option($this->cronlastexec, time());
+    }
+
+    /* ----------------------------------------------------------
+      Activation
+    ---------------------------------------------------------- */
+
     /* Create cron */
     public function install() {
         wp_clear_scheduled_hook($this->cronhook);
@@ -62,27 +113,8 @@ class WPUBaseCron {
     /* Destroy cron */
     public function uninstall() {
         wp_clear_scheduled_hook($this->cronhook);
+        delete_option($this->cronlastexec);
         delete_option($this->cronoption);
         flush_rewrite_rules();
     }
 }
-
-
-/*
- include 'inc/WPUBaseCron.php';
- $WPUBaseCron = new WPUBaseCron();
-
- ## plugins_loaded ##
- $WPUBaseCron->init(array(
-     'pluginname' => 'Base Plugin',
-     'cronhook' => 'wpubaseplugin__cron_hook',
-     'croninterval' => 900
- ));
-
- ## init ## (if ->init() was not triggered from plugins_loaded)
- $WPUBaseCron->check_cron();
-
- ## uninstall hook ##
- $WPUBaseCron->uninstall();
- *
- */
